@@ -5,21 +5,20 @@ import (
 )
 
 type User struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
-	Username  string    `json:"username" gorm:"unique;not null"`
-	Password  string    `json:"-" gorm:"not null"`
+	ID        uint      `gorm:"primaryKey" json:"id"`
+	Username  string    `gorm:"unique;not null" json:"username" binding:"required,min=3,max=30"`
+	Password  string    `gorm:"_" json:"-" binding:"required,min=6"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type Listing struct {
-	ID          uint      `json:"id" gorm:"primaryKey"`
-	UserID      uint      `json:"user_id" gorm:"not null"`
-	User        User      `json:"-" gorm:"foreignKey:UserID"`
-	Title       string    `json:"title" gorm:"not null"`
-	Description string    `json:"description"`
-	Price       float64   `json:"price" gorm:"not null"`
-	ImageURL    string    `json:"image_url"`
+	ID          uint      `gorm:"primaryKey" json:"id"`
+	UserID      uint      `gorm:"not null" json:"user_id"`
+	Title       string    `gorm:"not null" json:"title" binding:"required,min=5,max=100"`
+	Description string    `gorm:"not null" json:"description" binding:"required,min=10,max=500"`
+	Price       float64   `gorm:"not null" json:"price" binding:"required,gt=0"`
+	ImageURL    string    `gorm:"not null" json:"image_url" binding:"required,url"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
