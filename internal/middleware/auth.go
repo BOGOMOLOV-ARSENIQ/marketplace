@@ -2,14 +2,37 @@ package middleware
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var jwtSecret = []byte("super_secret_jwt_key")
+var JWTSecret = []byte(os.Getenv("JWT_SECRET"))
+
+func init() {
+	if len(JWTSecret) == 0 {
+		log.Fatal("JWT_SECRET environment variable is not set or empty")
+	}
+}
+
+// генерирует токен для пользователя
+func GenerateToken(userID uint) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": userID,
+		"exp":     time.Now().Add(time.Hour * 24).Unix(),
+	})
+
+	tokenString, err := token.SignedString(JWTSecret)
+	if err != nil {
+		return "", err
+	}
+	return tokenString, nil
+}
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -33,7 +56,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 			}
-			return jwtSecret, nil // секретный ключ для проверки подписи
+			return JWTSecret, nil // секретный ключ для проверки подписи
 		})
 
 		if err != nil {

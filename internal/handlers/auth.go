@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -13,7 +15,13 @@ import (
 	"github.com/BOGOMOLOV-ARSENIQ/marketplace/internal/models"
 )
 
-var jwtSecret = []byte("super_secret_jwt_key")
+var JWTSecret = []byte(os.Getenv("JWT_SECRET"))
+
+func init() {
+	if len(JWTSecret) == 0 {
+		log.Fatal("JWT_SECRET environment variable is not set or empty")
+	}
+}
 
 // запрос на регистрацию
 func RegisterHandler(c *gin.Context) {
@@ -85,7 +93,7 @@ func LoginHandler(c *gin.Context) {
 	})
 
 	// подписываем токен
-	tokenString, err := token.SignedString(jwtSecret)
+	tokenString, err := token.SignedString(JWTSecret)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
 		return
