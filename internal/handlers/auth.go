@@ -13,6 +13,7 @@ import (
 
 	"github.com/BOGOMOLOV-ARSENIQ/marketplace/internal/database"
 	"github.com/BOGOMOLOV-ARSENIQ/marketplace/internal/models"
+	"github.com/BOGOMOLOV-ARSENIQ/marketplace/pkg/utils"
 )
 
 var JWTSecret = []byte(os.Getenv("JWT_SECRET"))
@@ -29,6 +30,12 @@ func RegisterHandler(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// проверка на сложность
+	if !utils.ValidatePasswordComplexity(req.Password) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Password must contain at least two of the following: letters, digits, or special characters."})
 		return
 	}
 
