@@ -7,6 +7,7 @@ import (
 
 	"github.com/BOGOMOLOV-ARSENIQ/marketplace/internal/database"
 	"github.com/BOGOMOLOV-ARSENIQ/marketplace/internal/handlers"
+	"github.com/BOGOMOLOV-ARSENIQ/marketplace/internal/middleware"
 	"github.com/BOGOMOLOV-ARSENIQ/marketplace/internal/models"
 )
 
@@ -15,18 +16,25 @@ func main() {
 
 	router := gin.Default()
 
-	// Пример использования модели (пока неактивно, но для иллюстрации)
 	_ = models.User{}
 
-	// Определение маршрутов для аутентификации
-	router.POST("/register", handlers.RegisterHandler) // POST запрос на /register будет обрабатывать RegisterHandler
-	router.POST("/login", handlers.LoginHandler)       // POST запрос на /login будет обрабатывать LoginHandler
+	router.POST("/register", handlers.RegisterHandler)
+	router.POST("/login", handlers.LoginHandler)
 
 	router.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Привет от Gin! (после реорганизации и инициализации БД)",
 		})
 	})
+
+	authenticated := router.Group("/api")
+	{
+		authenticated.Use(middleware.AuthMiddleware())
+		authenticated.GET("/protected", func(c *gin.Context) {
+			userID, _ := c.Get("userID")
+			c.JSON(http.StatusOK, gin.H{"message": "Вы авторизованы!", "user_id": userID})
+		})
+	}
 
 	router.Run(":8080")
 }
