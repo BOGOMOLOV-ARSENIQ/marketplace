@@ -27,9 +27,17 @@ func main() {
 		})
 	})
 
+	router.GET("/listings", handlers.GetListingsHandler)
+	router.GET("/listings/:id", handlers.GetListingByIDHandler)
+
 	authenticated := router.Group("/api")
 	{
 		authenticated.Use(middleware.AuthMiddleware())
+
+		authenticated.POST("/listings", handlers.CreateListingHandler)
+		authenticated.PUT("/listings/:id", handlers.UpdateListingHandler)
+		authenticated.DELETE("/listings/:id", handlers.DeleteListingHandler)
+
 		authenticated.GET("/protected", func(c *gin.Context) {
 			userID, _ := c.Get("userID")
 			c.JSON(http.StatusOK, gin.H{"message": "Вы авторизованы!", "user_id": userID})
